@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Popup Templates · Whatfix</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:       #0C0C14;
+      --surface:  #13131C;
+      --surface2: #1A1A26;
+      --border:   rgba(255,255,255,0.07);
+      --border2:  rgba(255,255,255,0.04);
+      --text-1:   #EEEEF2;
+      --text-2:   #78788C;
+      --text-3:   #383848;
+      --accent:   #7B6CF6;
+    }
+
+    html { font-size:16px; -webkit-font-smoothing:antialiased; }
+
+    body {
+      font-family:'DM Sans', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Noise */
+    body::after {
+      content:'';
+      position:fixed; inset:0;
+      pointer-events:none; z-index:9999;
+      opacity:0.032;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:256px 256px;
+    }
+
+    /* Ambient glow */
+    .bg-glow {
+      position:fixed; inset:0; pointer-events:none; z-index:0;
+      background:
+        radial-gradient(ellipse 80% 50% at 15% -5%,  rgba(123,108,246,.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 85% 110%, rgba(99,102,241,.05)  0%, transparent 60%);
+    }
+
+    /* Page */
+    .page {
+      position:relative; z-index:1;
+      max-width:1200px; margin:0 auto;
+      padding:0 44px 120px;
+    }
+
+    /* Hero */
+    .hero {
+      padding:88px 0 64px;
+      text-align:center;
+    }
+    .brand-row {
+      display:inline-flex; align-items:center;
+      margin-bottom:28px;
+    }
+    .brand-logo {
+      height:28px; width:auto; opacity:.9;
+    }
+    h1 {
+      font-family:'Syne', sans-serif;
+      font-size:clamp(44px,6vw,76px);
+      font-weight:800; line-height:1.0;
+      letter-spacing:-.04em;
+      color:var(--text-1);
+      margin-bottom:14px;
+    }
+    .subtitle {
+      font-size:14.5px; color:var(--text-2); font-weight:400;
+    }
+
+    /* Divider */
+    .rule {
+      width:100%; height:1px;
+      background:var(--border);
+      margin-bottom:36px;
+    }
+
+    /* Tabs */
+    .filter-wrap {
+      display:flex; justify-content:center;
+      margin-bottom:52px;
+    }
+    .filter-row {
+      display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+    }
+    .tab {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 16px; border-radius:100px;
+      border:1px solid var(--border);
+      background:transparent;
+      font-family:'DM Sans', sans-serif;
+      font-size:13px; font-weight:500;
+      color:var(--text-2); cursor:pointer;
+      white-space:nowrap; line-height:1;
+      letter-spacing:-.01em;
+      transition:all .18s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .tab:hover:not(.active) {
+      border-color:rgba(255,255,255,.14);
+      color:var(--text-1);
+      background:rgba(255,255,255,.04);
+    }
+    .tab.active {
+      background:var(--text-1);
+      color:#0C0C14;
+      border-color:var(--text-1);
+    }
+    .tab-count {
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:18px; height:18px; padding:0 5px;
+      border-radius:100px; font-size:10px; font-weight:600;
+      background:rgba(255,255,255,.09); color:var(--text-2);
+      letter-spacing:0; transition:all .18s;
+    }
+    .tab.active .tab-count {
+      background:rgba(12,12,20,.14);
+      color:rgba(12,12,20,.55);
+    }
+
+    /* Grid */
+    .panels-wrap { width:100%; }
+    .tab-panel { display:none; }
+    .tab-panel.active {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(258px, 1fr));
+      gap:14px;
+    }
+
+    /* Card */
+    .card {
+      background:var(--surface);
+      border-radius:16px;
+      overflow:hidden; cursor:pointer;
+      border:1px solid var(--border2);
+      position:relative;
+      transition:transform .3s cubic-bezier(.34,1.4,.64,1), box-shadow .3s ease, border-color .3s ease;
+      will-change:transform;
+    }
+    /* Shine layer */
+    .card::before {
+      content:''; position:absolute; inset:0;
+      border-radius:16px;
+      background:radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,.055) 0%, transparent 65%);
+      opacity:0; transition:opacity .3s; z-index:2; pointer-events:none;
+    }
+    .card:hover {
+      transform:translateY(-6px);
+      border-color:rgba(255,255,255,.11);
+      box-shadow:0 0 0 1px rgba(255,255,255,.04), 0 20px 50px rgba(0,0,0,.55), 0 6px 16px rgba(0,0,0,.3);
+    }
+    .card:hover::before { opacity:1; }
+
+    .card-thumb {
+      position:relative; width:100%; aspect-ratio:4/3;
+      background:#F2F3F9; overflow:hidden;
+    }
+    .card-thumb img {
+      width:100%; height:100%; object-fit:contain;
+      padding:16px; display:block;
+      transition:transform .4s cubic-bezier(.34,1.15,.64,1);
+    }
+    .card:hover .card-thumb img { transform:scale(1.05); }
+
+    /* View hint */
+    .card-view {
+      position:absolute; bottom:10px; left:50%;
+      transform:translateX(-50%) translateY(8px);
+      background:rgba(5,5,14,.78);
+      backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:100px;
+      padding:5px 11px 5px 8px;
+      display:flex; align-items:center; gap:5px;
+      opacity:0; pointer-events:none; z-index:3;
+      transition:opacity .2s, transform .2s;
+      white-space:nowrap; color:rgba(255,255,255,.88);
+      font-size:11px; font-weight:500;
+    }
+    .card-view svg {
+      width:11px; height:11px; stroke:rgba(255,255,255,.7);
+      stroke-width:1.8; fill:none;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+    .card:hover .card-view { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    .card-body {
+      padding:11px 13px 12px;
+      border-top:1px solid var(--border2);
+      display:flex; align-items:center; justify-content:space-between; gap:8px;
+    }
+    .card-tag {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:10px; font-weight:500; color:var(--text-2);
+      white-space:nowrap; flex-shrink:0;
+    }
+    .cat-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .card[data-category="Outage alerts"]  .cat-dot { background:#FF5555; }
+    .card[data-category="Announcements"]  .cat-dot { background:#4D9EFF; }
+    .card[data-category="Maintenance"]    .cat-dot { background:#F5A623; }
+    .card[data-category="Training"]       .cat-dot { background:#2ECC9A; }
+    .card[data-category="Feature updates"].cat-dot { background:#9B7DFF; }
+    .card[data-category="Policy updates"] .cat-dot { background:#FF7EB3; }
+
+    .card-code {
+      font-family:'SF Mono','Fira Code',monospace;
+      font-size:10px; color:var(--text-3);
+      cursor:copy; transition:color .15s;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .card-code:hover { color:var(--text-2); }
+
+    /* Empty */
+    .empty {
+      grid-column:1/-1; padding:88px 32px;
+      display:flex; flex-direction:column; align-items:center;
+      gap:12px; text-align:center;
+    }
+    .empty-box {
+      width:42px; height:42px; border-radius:11px;
+      border:1.5px dashed var(--text-3);
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:4px;
+    }
+    .empty-box svg { width:15px; height:15px; stroke:var(--text-3); stroke-width:1.5; fill:none; stroke-linecap:round; }
+    .empty-label { font-size:14px; color:var(--text-3); }
+    .empty-sub   { font-size:12px; color:var(--text-3); opacity:.5; }
+
+    /* ── Lightbox ── */
+    .lightbox {
+      position:fixed; inset:0;
+      background:rgba(4,4,10,.95);
+      backdrop-filter:blur(30px) saturate(130%);
+      -webkit-backdrop-filter:blur(30px) saturate(130%);
+      z-index:1000;
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none;
+      padding:24px;
+    }
+    .lightbox.open { pointer-events:all; }
+
+    .lb-close {
+      position:absolute; top:18px; right:18px;
+      width:32px; height:32px; border-radius:8px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.1);
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:background .15s; z-index:10;
+    }
+    .lb-close:hover { background:rgba(255,255,255,.13); }
+    .lb-close svg { width:10px; height:10px; stroke:rgba(255,255,255,.8); stroke-width:2; stroke-linecap:round; fill:none; }
+
+    /* Wrap */
+    .lb-wrap {
+      width:100%; max-width:820px;
+      display:flex; flex-direction:column;
+      align-items:center; gap:18px;
+      will-change:transform;
+    }
+
+    .lb-row {
+      display:flex; align-items:center;
+      gap:18px; width:100%;
+    }
+
+    .lb-img-wrap {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      overflow:hidden; min-width:0;
+    }
+
+    #lbSlide {
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    #lbSlide img {
+      max-width:100%; max-height:60vh;
+      border-radius:14px;
+      box-shadow:0 40px 100px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.06);
+      display:block; object-fit:contain;
+    }
+
+    .lb-nav {
+      width:44px; height:44px; flex-shrink:0;
+      border-radius:50%;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.1);
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:background .18s, opacity .18s;
+    }
+    .lb-nav:hover:not(:disabled) { background:rgba(255,255,255,.14); }
+    .lb-nav:disabled { opacity:.15; cursor:default; }
+    .lb-nav svg { width:14px; height:14px; stroke:rgba(255,255,255,.85); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; fill:none; }
+
+    /* Info bar */
+    .lb-info {
+      display:flex; align-items:center;
+      justify-content:space-between;
+      width:100%; padding:0 2px;
+    }
+    .lb-meta { display:flex; align-items:center; gap:8px; }
+    .lb-cat  { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:500; color:var(--text-2); }
+    .lb-cat-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .lb-sep  { width:1px; height:12px; background:var(--border); }
+    .lb-code { font-family:'SF Mono','Fira Code',monospace; font-size:11px; color:var(--text-3); }
+    .lb-counter {
+      font-size:12px; font-weight:500; color:var(--text-3);
+      letter-spacing:.05em; font-variant-numeric:tabular-nums;
+    }
+
+    /* Thumbnail strip */
+    .lb-strip {
+      display:flex; gap:5px;
+      overflow-x:auto; scrollbar-width:none;
+      width:100%; padding:2px 0;
+    }
+    .lb-strip::-webkit-scrollbar { display:none; }
+    .lb-thumb {
+      width:54px; height:40px; flex-shrink:0;
+      border-radius:7px; overflow:hidden;
+      cursor:pointer;
+      border:2px solid transparent;
+      opacity:.35;
+      background:#F2F3F9;
+      transition:opacity .18s, border-color .18s;
+    }
+    .lb-thumb img { width:100%; height:100%; object-fit:contain; padding:3px; display:block; }
+    .lb-thumb:hover { opacity:.65; }
+    .lb-thumb.active { border-color:rgba(255,255,255,.65); opacity:1; }
+
+    /* Keyboard hints */
+    .lb-hint {
+      position:absolute; bottom:18px; left:50%;
+      transform:translateX(-50%);
+      display:flex; gap:8px; align-items:center;
+      pointer-events:none;
+    }
+    .lb-key {
+      display:inline-flex; align-items:center; gap:4px;
+      font-size:10px; color:var(--text-3);
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:5px; padding:3px 7px;
+    }
+    .lb-key kbd { font-family:'SF Mono',monospace; font-size:9px; }
+
+    /* Toast */
+    .toast {
+      position:fixed; bottom:32px; left:50%;
+      transform:translateX(-50%) translateY(10px);
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:100px; padding:8px 18px;
+      font-size:12px; font-weight:500; color:var(--text-1);
+      pointer-events:none; opacity:0; z-index:2000;
+      white-space:nowrap;
+      box-shadow:0 8px 24px rgba(0,0,0,.4);
+    }
+
+    @media (max-width:700px) {
+      .page { padding:0 20px 80px; }
+      h1 { font-size:38px; }
+      .tab { padding:6px 12px; font-size:12px; }
+      .lb-nav { width:36px; height:36px; }
+      .lb-thumb { width:44px; height:33px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<div class="page">
+
+  <header class="hero" id="hero">
+    <div class="brand-row">
+      <img src="Whatfix.svg" alt="Whatfix" class="brand-logo">
+    </div>
+    <h1>Popup Templates</h1>
+    <p class="subtitle">13 templates across 2 categories</p>
+  </header>
+
+  <div class="rule" id="rule"></div>
+
+  <div class="filter-wrap" id="filterWrap">
+    <div class="filter-row">
+      <button class="tab active" data-tab="all">All <span class="tab-count">13</span></button>
+      <button class="tab" data-tab="outage">Outage alerts <span class="tab-count">12</span></button>
+      <button class="tab" data-tab="announcements">Announcements <span class="tab-count">1</span></button>
+      <button class="tab" data-tab="maintenance">Maintenance <span class="tab-count">0</span></button>
+      <button class="tab" data-tab="training">Training <span class="tab-count">0</span></button>
+      <button class="tab" data-tab="features">Feature updates <span class="tab-count">0</span></button>
+      <button class="tab" data-tab="policy">Policy updates <span class="tab-count">0</span></button>
+    </div>
+  </div>
+
+  <div class="panels-wrap">
+
+    <!-- ALL -->
+    <div class="tab-panel active" id="panel-all">
+      <div class="card" data-src="Outage alerts/OA-M-MT-01.png" data-code="OA-M-MT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-01.png" alt="OA-M-MT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-MT-02.png" data-code="OA-M-MT-02" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-02.png" alt="OA-M-MT-02" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-02</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-MT-03.png" data-code="OA-M-MT-03" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-03.png" alt="OA-M-MT-03" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-03</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-MT-04.png" data-code="OA-M-MT-04" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-04.png" alt="OA-M-MT-04" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-04</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-MT-05.png" data-code="OA-M-MT-05" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-05.png" alt="OA-M-MT-05" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-05</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-OT-01.png" data-code="OA-M-OT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-OT-01.png" alt="OA-M-OT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-OT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-OT-02.png" data-code="OA-M-OT-02" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-OT-02.png" alt="OA-M-OT-02" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-OT-02</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-C-MT-01.png" data-code="OA-C-MT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-C-MT-01.png" alt="OA-C-MT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-C-MT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-C-OT-01.png" data-code="OA-C-OT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-C-OT-01.png" alt="OA-C-OT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-C-OT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-S-MT-01.png" data-code="OA-S-MT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-S-MT-01.png" alt="OA-S-MT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-S-MT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-S-MT-02.png" data-code="OA-S-MT-02" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-S-MT-02.png" alt="OA-S-MT-02" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-S-MT-02</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-S-OT-01.png" data-code="OA-S-OT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-S-OT-01.png" alt="OA-S-OT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-S-OT-01</span></div>
+      </div>
+      <div class="card" data-src="Announcements/AN-M-MT-01.png" data-code="AN-M-MT-01" data-category="Announcements">
+        <div class="card-thumb"><img src="Announcements/AN-M-MT-01.png" alt="AN-M-MT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Announcements</span><span class="card-code">AN-M-MT-01</span></div>
+      </div>
+    </div>
+
+    <!-- OUTAGE ALERTS -->
+    <div class="tab-panel" id="panel-outage">
+      <div class="card" data-src="Outage alerts/OA-M-MT-01.png" data-code="OA-M-MT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-01.png" alt="OA-M-MT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-MT-02.png" data-code="OA-M-MT-02" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-02.png" alt="OA-M-MT-02" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-02</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-MT-03.png" data-code="OA-M-MT-03" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-03.png" alt="OA-M-MT-03" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-03</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-MT-04.png" data-code="OA-M-MT-04" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-04.png" alt="OA-M-MT-04" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-04</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-MT-05.png" data-code="OA-M-MT-05" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-MT-05.png" alt="OA-M-MT-05" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-MT-05</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-OT-01.png" data-code="OA-M-OT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-OT-01.png" alt="OA-M-OT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-OT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-M-OT-02.png" data-code="OA-M-OT-02" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-M-OT-02.png" alt="OA-M-OT-02" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-M-OT-02</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-C-MT-01.png" data-code="OA-C-MT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-C-MT-01.png" alt="OA-C-MT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-C-MT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-C-OT-01.png" data-code="OA-C-OT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-C-OT-01.png" alt="OA-C-OT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-C-OT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-S-MT-01.png" data-code="OA-S-MT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-S-MT-01.png" alt="OA-S-MT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-S-MT-01</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-S-MT-02.png" data-code="OA-S-MT-02" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-S-MT-02.png" alt="OA-S-MT-02" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-S-MT-02</span></div>
+      </div>
+      <div class="card" data-src="Outage alerts/OA-S-OT-01.png" data-code="OA-S-OT-01" data-category="Outage alerts">
+        <div class="card-thumb"><img src="Outage alerts/OA-S-OT-01.png" alt="OA-S-OT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Outage alerts</span><span class="card-code">OA-S-OT-01</span></div>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="tab-panel" id="panel-announcements">
+      <div class="card" data-src="Announcements/AN-M-MT-01.png" data-code="AN-M-MT-01" data-category="Announcements">
+        <div class="card-thumb"><img src="Announcements/AN-M-MT-01.png" alt="AN-M-MT-01" loading="lazy"><div class="card-view"><svg viewBox="0 0 14 14"><path d="M9 1h4v4M13 1l-5 5M5 13H1V9M1 13l5-5"/></svg>View</div></div>
+        <div class="card-body"><span class="card-tag"><span class="cat-dot"></span>Announcements</span><span class="card-code">AN-M-MT-01</span></div>
+      </div>
+    </div>
+
+    <!-- EMPTY PANELS -->
+    <div class="tab-panel" id="panel-maintenance">
+      <div class="empty"><div class="empty-box"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></div><p class="empty-label">No templates yet</p><p class="empty-sub">Maintenance coming soon</p></div>
+    </div>
+    <div class="tab-panel" id="panel-training">
+      <div class="empty"><div class="empty-box"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></div><p class="empty-label">No templates yet</p><p class="empty-sub">Training coming soon</p></div>
+    </div>
+    <div class="tab-panel" id="panel-features">
+      <div class="empty"><div class="empty-box"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></div><p class="empty-label">No templates yet</p><p class="empty-sub">Feature updates coming soon</p></div>
+    </div>
+    <div class="tab-panel" id="panel-policy">
+      <div class="empty"><div class="empty-box"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></div><p class="empty-label">No templates yet</p><p class="empty-sub">Policy updates coming soon</p></div>
+    </div>
+
+  </div><!-- /panels-wrap -->
+</div><!-- /page -->
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">
+    <svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg>
+  </button>
+
+  <div class="lb-wrap" id="lbWrap">
+    <div class="lb-row">
+      <button class="lb-nav" id="lbPrev">
+        <svg viewBox="0 0 14 14"><polyline points="9,2 5,7 9,12"/></svg>
+      </button>
+      <div class="lb-img-wrap">
+        <div id="lbSlide"><img id="lbImg" src="" alt=""></div>
+      </div>
+      <button class="lb-nav" id="lbNext">
+        <svg viewBox="0 0 14 14"><polyline points="5,2 9,7 5,12"/></svg>
+      </button>
+    </div>
+
+    <div class="lb-info">
+      <div class="lb-meta">
+        <span class="lb-cat"><span class="lb-cat-dot" id="lbCatDot"></span><span id="lbCat"></span></span>
+        <span class="lb-sep"></span>
+        <span class="lb-code" id="lbCode"></span>
+      </div>
+      <span class="lb-counter" id="lbCounter"></span>
+    </div>
+
+    <div class="lb-strip" id="lbStrip"></div>
+  </div>
+
+  <div class="lb-hint">
+    <span class="lb-key"><kbd>←</kbd> prev</span>
+    <span class="lb-key"><kbd>→</kbd> next</span>
+    <span class="lb-key"><kbd>Esc</kbd> close</span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  const CAT_COLORS = {
+    'Outage alerts':   '#FF5555',
+    'Announcements':   '#4D9EFF',
+    'Maintenance':     '#F5A623',
+    'Training':        '#2ECC9A',
+    'Feature updates': '#9B7DFF',
+    'Policy updates':  '#FF7EB3',
+  };
+
+  /* ── Card shine ── */
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((e.clientX - r.left) / r.width  * 100) + '%');
+      card.style.setProperty('--my', ((e.clientY - r.top)  / r.height * 100) + '%');
+    });
+  });
+
+  /* ── Copy code ── */
+  const toastEl = document.getElementById('toast');
+  let toastTl;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    if (toastTl) toastTl.kill();
+    toastTl = gsap.timeline()
+      .to(toastEl, { opacity:1, y:0,  duration:.2, ease:'power2.out' })
+      .to(toastEl, { opacity:0, y:6,  duration:.2, ease:'power2.in', delay:1.4 });
+  }
+
+  document.querySelectorAll('.card-code').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(el.textContent).then(() => showToast('Copied ' + el.textContent));
+    });
+  });
+
+  /* ── Tabs ── */
+  const tabBtns = document.querySelectorAll('.tab');
+  let activePanel = document.querySelector('.tab-panel.active');
+
+  tabBtns.forEach(tab => {
+    tab.addEventListener('click', () => {
+      if (tab.classList.contains('active')) return;
+      document.querySelector('.tab.active').classList.remove('active');
+      tab.classList.add('active');
+      const next = document.getElementById('panel-' + tab.dataset.tab);
+      const items = next.querySelectorAll('.card, .empty');
+      gsap.to(activePanel, {
+        opacity:0, scale:.98, duration:.13, ease:'power2.in',
+        onComplete: () => {
+          activePanel.classList.remove('active');
+          gsap.set(activePanel, { opacity:1, scale:1 });
+          next.classList.add('active');
+          gsap.fromTo(items,
+            { opacity:0, y:18, scale:.97 },
+            { opacity:1, y:0, scale:1, duration:.32, ease:'power3.out', stagger:.04 }
+          );
+          activePanel = next;
+        }
+      });
+    });
+  });
+
+  /* ── Lightbox ── */
+  const lb        = document.getElementById('lightbox');
+  const lbWrap    = document.getElementById('lbWrap');
+  const lbSlide   = document.getElementById('lbSlide');
+  const lbImg     = document.getElementById('lbImg');
+  const lbPrev    = document.getElementById('lbPrev');
+  const lbNext    = document.getElementById('lbNext');
+  const lbClose   = document.getElementById('lbClose');
+  const lbCounter = document.getElementById('lbCounter');
+  const lbStrip   = document.getElementById('lbStrip');
+  const lbCat     = document.getElementById('lbCat');
+  const lbCode    = document.getElementById('lbCode');
+  const lbCatDot  = document.getElementById('lbCatDot');
+
+  let cardList = [];
+  let idx = 0;
+
+  function pad(n) { return n.toString().padStart(2, '0'); }
+
+  function syncMeta() {
+    const c = cardList[idx];
+    const cat = c.dataset.category;
+    lbCat.textContent  = cat;
+    lbCode.textContent = c.dataset.code;
+    lbCatDot.style.background = CAT_COLORS[cat] || '#888';
+    lbCounter.textContent = pad(idx + 1) + ' / ' + pad(cardList.length);
+    lbPrev.disabled = idx === 0;
+    lbNext.disabled = idx === cardList.length - 1;
+    [...lbStrip.children].forEach((t, i) => t.classList.toggle('active', i === idx));
+    const thumb = lbStrip.children[idx];
+    if (thumb) thumb.scrollIntoView({ inline:'nearest', behavior:'smooth' });
+  }
+
+  function buildStrip() {
+    lbStrip.innerHTML = '';
+    cardList.forEach((c, i) => {
+      const t = document.createElement('div');
+      t.className = 'lb-thumb' + (i === idx ? ' active' : '');
+      t.innerHTML = `<img src="${c.dataset.src}" loading="lazy">`;
+      t.addEventListener('click', () => {
+        if (i === idx) return;
+        const dir = i > idx ? 1 : -1;
+        idx = i;
+        slide(dir);
+      });
+      lbStrip.appendChild(t);
+    });
+  }
+
+  function slide(dir) {
+    lbImg.src = cardList[idx].dataset.src;
+    gsap.fromTo(lbSlide,
+      { x: dir * 36, opacity:0 },
+      { x:0, opacity:1, duration:.26, ease:'power2.out' }
+    );
+    syncMeta();
+  }
+
+  function openLb(card) {
+    cardList = [...activePanel.querySelectorAll('.card')];
+    idx = cardList.indexOf(card);
+    lbImg.src = card.dataset.src;
+    buildStrip();
+    syncMeta();
+    lb.classList.add('open');
+    gsap.fromTo(lb,     { opacity:0 },                      { opacity:1, duration:.22, ease:'power2.out' });
+    gsap.fromTo(lbWrap, { scale:.88, opacity:0, y:24 },     { scale:1,   opacity:1,   y:0, duration:.38, ease:'back.out(1.5)' });
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLb() {
+    gsap.to(lbWrap, { scale:.93, opacity:0, y:14, duration:.2, ease:'power2.in' });
+    gsap.to(lb, {
+      opacity:0, duration:.22, ease:'power2.in',
+      onComplete: () => {
+        lb.classList.remove('open');
+        gsap.set(lbWrap, { scale:1, opacity:1, y:0 });
+        gsap.set(lbSlide, { x:0, opacity:1 });
+        document.body.style.overflow = '';
+      }
+    });
+  }
+
+  function nav(dir) {
+    const n = idx + dir;
+    if (n < 0 || n >= cardList.length) return;
+    idx = n;
+    slide(dir);
+  }
+
+  document.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => openLb(c)));
+  lbPrev.addEventListener('click',  () => nav(-1));
+  lbNext.addEventListener('click',  () => nav(1));
+  lbClose.addEventListener('click', closeLb);
+  lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape')     closeLb();
+    if (e.key === 'ArrowLeft')  nav(-1);
+    if (e.key === 'ArrowRight') nav(1);
+  });
+
+  /* ── Shuffle All ── */
+  const allPanel = document.getElementById('panel-all');
+  [...allPanel.querySelectorAll('.card')]
+    .sort(() => Math.random() - 0.5)
+    .forEach(c => allPanel.appendChild(c));
+
+  /* ── Entrance ── */
+  document.fonts.ready.then(() => {
+    const tl = gsap.timeline({ defaults:{ ease:'power3.out' } });
+    tl.fromTo('#hero',       { opacity:0, y:-20  }, { opacity:1, y:0, duration:.55 })
+      .fromTo('#rule',       { scaleX:0, transformOrigin:'left' }, { scaleX:1, duration:.6 }, '-=.3')
+      .fromTo('#filterWrap', { opacity:0, y:8    }, { opacity:1, y:0, duration:.4  }, '-=.35')
+      .fromTo('#panel-all .card',
+        { opacity:0, y:28, scale:.95 },
+        { opacity:1, y:0,  scale:1, duration:.45, stagger:.05 }, '-=.2'
+      );
+  });
+</script>
+</body>
+</html>
