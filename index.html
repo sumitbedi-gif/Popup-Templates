@@ -788,7 +788,7 @@
 
   /* ── Shuffle "All" panel on every page load (pinned cards first) ── */
   (function shuffleAll() {
-    const PINNED = ['AN-M-MT-05','AN-M-MT-03','MN-M-MT-05','MN-M-MT-06','MN-M-MT-04','MN-M-MT-07','OA-M-MT-04','AN-M-MT-04'];
+    const PINNED = ['AN-M-MT-05','AN-M-MT-03','MN-M-MT-05','MN-M-MT-06','MN-M-MT-04','MN-M-MT-07','OA-M-MT-04','AN-M-MT-04','MN-M-MT-01','AN-M-MT-02','OA-M-MT-08'];
     const allPanel = document.getElementById('panel-all');
     const cards = [...allPanel.querySelectorAll('.card')];
     const pinned = PINNED.map(code => cards.find(c => c.dataset.code === code)).filter(Boolean);
