@@ -786,15 +786,18 @@
   }
   updateCounts();
 
-  /* ── Shuffle "All" panel on every page load ── */
+  /* ── Shuffle "All" panel on every page load (pinned cards first) ── */
   (function shuffleAll() {
+    const PINNED = ['AN-M-MT-05','AN-M-MT-03','MN-M-MT-05','MN-M-MT-06','MN-M-MT-04','MN-M-MT-07','OA-M-MT-04','AN-M-MT-04'];
     const allPanel = document.getElementById('panel-all');
     const cards = [...allPanel.querySelectorAll('.card')];
-    for (let i = cards.length - 1; i > 0; i--) {
+    const pinned = PINNED.map(code => cards.find(c => c.dataset.code === code)).filter(Boolean);
+    const rest = cards.filter(c => !PINNED.includes(c.dataset.code));
+    for (let i = rest.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [cards[i], cards[j]] = [cards[j], cards[i]];
+      [rest[i], rest[j]] = [rest[j], rest[i]];
     }
-    cards.forEach(c => allPanel.appendChild(c));
+    [...pinned, ...rest].forEach(c => allPanel.appendChild(c));
   })();
 
   /* ── Card shine ── */
